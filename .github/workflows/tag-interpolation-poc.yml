@@ -1,0 +1,25 @@
+name: Tag interpolation PoC
+on:
+  pull_request:
+    branches: [main]
+
+jobs:
+  extract:
+    runs-on: ubuntu-latest
+    outputs:
+      VERSION: ${{ steps.version.outputs.VERSION }}
+    steps:
+      - id: version
+        env:
+          POC_TAG: 'v1$(printf${IFS}POC)'
+        run: echo "VERSION=$POC_TAG" >> "$GITHUB_OUTPUT"
+
+  probe:
+    needs: extract
+    runs-on: ubuntu-latest
+    steps:
+      - env:
+          RAW_VERSION: ${{ needs.extract.outputs.VERSION }}
+        run: |
+          printf 'from_env=%s\n' "$RAW_VERSION"
+          printf 'interpolated=%s\n' "${{ needs.extract.outputs.VERSION }}"
